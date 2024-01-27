@@ -1,5 +1,5 @@
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram import ParseMode, Update
+from telegram.ext import CommandHandler, Filters, MessageHandler, Updater, ConversationHandler, CallbackContext
 from telethon.sync import TelegramClient, events
 import os
 
