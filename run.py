@@ -17,20 +17,10 @@ telethon_client = TelegramClient('my_bot', API_ID, API_HASH)
 def start(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
 
-    # Prompt the user for phone number and authentication code
-    update.message.reply_text("Please enter your phone number to log in:")
-    phone_number = input("Enter your phone number: ")
 
     # Send authentication code
     with telethon_client as client:
-        client.connect()
-        client.send_code_request(phone_number)
-
-    # Prompt user for authentication code
-    authentication_code = input("Enter the authentication code: ")
-
-    # Log in the user
-    login_telethon(phone_number, authentication_code)
+        client.start()
 
     # Use Telethon to perform advanced actions based on user_id
     update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
@@ -60,12 +50,12 @@ def start(update: Update, context: CallbackContext) -> None:
     else:
         print(f"Invalid channel username: {selected_channel_username}")
 
+
+
 def login_telethon(phone_number, code):
     # Use Telethon to perform user authentication
     with telethon_client as client:
-        client.connect()
-        if not client.is_user_authorized():
-            client.sign_in(phone_number, code)
+        client.start()
 
 def main() -> None:
     # Start the Telegram bot
