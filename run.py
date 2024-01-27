@@ -9,7 +9,7 @@ API_ID = os.environ.get('API_ID')
 API_HASH = os.environ.get('API_HASH')
 PHONE_NUMBER = os.environ.get('PHONE_NUMBER')
 APP_URL = os.environ.get("APP_URL")
-PORT = int(os.environ.get('PORT', '8443'))
+PORT = int(os.environ.get('PORT'))
 
 # Create a TelegramClient instance for Telethon
 telethon_client = TelegramClient('my_bot', API_ID, API_HASH)
