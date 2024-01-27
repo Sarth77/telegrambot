@@ -75,8 +75,8 @@ def main() -> None:
     dp.add_handler(CommandHandler("start", start))
 
     # Start the webhook
-    updater.start_webhook(port=PORT, url_path=TELEGRAM_BOT_TOKEN)
-    updater.bot.setWebhook(APP_URL + TELEGRAM_BOT_TOKEN)
+    updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TELEGRAM_BOT_TOKEN, webhook_url=APP_URL + TELEGRAM_BOT_TOKEN)
+    updater.idle()
 
     # Run the bot until you press Ctrl-C
     updater.idle()
