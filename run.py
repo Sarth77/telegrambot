@@ -16,10 +16,10 @@ PORT = int(os.environ.get('PORT'))
 telethon_client = TelegramClient('session', API_ID, API_HASH)
 
 def start_telethon_handler(event):
-    sender = await event.get_sender()
+    sender = event.sender_id
     chat_id = event.message.peer_id
     if isinstance(chat_id, (PeerUser, PeerChat, PeerChannel)):
-        await telethon_client.send_message(chat_id, 'Welcome to the bot! How can I assist you?')
+        telethon_client.send_message(chat_id, 'Welcome to the bot! How can I assist you?')
 
 def start(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
