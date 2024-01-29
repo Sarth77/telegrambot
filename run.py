@@ -20,33 +20,33 @@ def start(update: Update, context: CallbackContext) -> None:
     # Send authentication code
     client = telethon_client.start()
 
-        # Use Telethon to perform advanced actions based on user_id
-        update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
+    # Use Telethon to perform advanced actions based on user_id
+    update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
 
-        # Get all the channels that the user can access
-        channels = {d.entity.username: d.entity
-                    for d in client.get_dialogs()
-                    if d.is_channel}
+    # Get all the channels that the user can access
+    channels = {d.entity.username: d.entity
+                for d in client.get_dialogs()
+                if d.is_channel}
 
-        # Prompt the user to select a channel
-        print("Available Channels:")
-        for username, entity in channels.items():
-            print(f"{username} - {entity.title}")
+    # Prompt the user to select a channel
+    print("Available Channels:")
+    for username, entity in channels.items():
+        print(f"{username} - {entity.title}")
 
-        selected_channel_username = input("Enter the username of the channel you want to view: ")
+    selected_channel_username = input("Enter the username of the channel you want to view: ")
 
-        # Check if the selected channel username is valid
-        if selected_channel_username in channels:
-            selected_channel = channels[selected_channel_username]
+    # Check if the selected channel username is valid
+    if selected_channel_username in channels:
+        selected_channel = channels[selected_channel_username]
 
-            # Get the latest chat from the selected channel
-            latest_message = client.get_messages(selected_channel, limit=1)[0]
+        # Get the latest chat from the selected channel
+        latest_message = client.get_messages(selected_channel, limit=1)[0]
 
-            print(f"\nLatest Chat from {selected_channel_username} - {selected_channel.title}:")
-            print(f"{latest_message.sender_id}: {latest_message.text}")
+        print(f"\nLatest Chat from {selected_channel_username} - {selected_channel.title}:")
+        print(f"{latest_message.sender_id}: {latest_message.text}")
 
-        else:
-            print(f"Invalid channel username: {selected_channel_username}")
+    else:
+        print(f"Invalid channel username: {selected_channel_username}")
 
 def login_telethon(phone_number, code):
     # Use Telethon to perform user authentication
