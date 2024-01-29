@@ -18,8 +18,7 @@ def start(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
 
     # Send authentication code
-    with telethon_client as client:
-        client.start()
+    client = telethon_client.start()
 
         # Use Telethon to perform advanced actions based on user_id
         update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
