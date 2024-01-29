@@ -1,6 +1,7 @@
-from telegram import ParseMode, Update
-from telegram.ext import CommandHandler, Filters, MessageHandler, Updater, ConversationHandler, CallbackContext
-from telethon import TelegramClient, events
+from telegram import Update
+from telegram.ext import CommandHandler, MessageHandler, Filters, Updater, CallbackContext
+from telethon.sync import TelegramClient, events
+from telethon.tl.types import PeerUser, PeerChat, PeerChannel
 import os
 
 # Get environment variables or use default values
@@ -11,9 +12,20 @@ PHONE_NUMBER = os.environ.get('PHONE_NUMBER')
 APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
 
-def start(update: Update, context: CallbackContext) -> None:
+# Initialize Telethon client
+telethon_client = TelegramClient('session', API_ID, API_HASH)
 
-    client = TelegramClient('session', API_ID, API_HASH).start(bot_token=TELEGRAM_BOT_TOKEN)
+def start_telethon_handler(event):
+    sender = await event.get_sender()
+    chat_id = event.message.peer_id
+    if isinstance(chat_id, (PeerUser, PeerChat, PeerChannel)):
+        await telethon_client.send_message(chat_id, 'Welcome to the bot! How can I assist you?')
+
+def start(update: Update, context: CallbackContext) -> None:
+    user_id = update.message.from_user.id
+
+    # Send authentication code
+    client = telethon_client.start()
 
     # Use Telethon to perform advanced actions based on user_id
     update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
@@ -43,6 +55,10 @@ def start(update: Update, context: CallbackContext) -> None:
     else:
         print(f"Invalid channel username: {selected_channel_username}")
 
+def login_telethon(phone_number, code):
+    # Use Telethon to perform user authentication
+    with telethon_client as client:
+        client.start()
 
 def main() -> None:
     # Start the Telegram bot
@@ -50,12 +66,12 @@ def main() -> None:
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
+    
+    # Add a MessageHandler to handle /start command from users
+    dp.add_handler(MessageHandler(Filters.command & Filters.regex("^/start$"), start_telethon_handler))
 
     # Start the webhook
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TELEGRAM_BOT_TOKEN, webhook_url=APP_URL + TELEGRAM_BOT_TOKEN)
-    updater.idle()
-
-    # Run the bot until you press Ctrl-C
     updater.idle()
 
 if __name__ == '__main__':
