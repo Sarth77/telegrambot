@@ -1,7 +1,9 @@
 from telegram import Update
-from telegram.ext import CommandHandler, MessageHandler, Filters, Updater, CallbackContext
+from telegram.ext import CommandHandler, Updater, CallbackContext, MessageHandler, Filters
 from telethon.sync import TelegramClient, events
 from telethon.tl.types import PeerUser, PeerChat, PeerChannel
+import threading
+import asyncio
 import os
 
 # Get environment variables or use default values
@@ -20,6 +22,16 @@ def start_telethon_handler(event):
     chat_id = event.message.peer_id
     if isinstance(chat_id, (PeerUser, PeerChat, PeerChannel)):
         telethon_client.send_message(chat_id, 'Welcome to the bot! How can I assist you?')
+
+def telethon_worker():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    # Start the Telethon client in the thread
+    with telethon_client as client:
+        loop.run_until_complete(client.start())
+        client.add_event_handler(start_telethon_handler, events.NewMessage(pattern='/start'))
+        loop.run_until_complete(client.run_until_disconnected())
 
 def start(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
@@ -55,24 +67,23 @@ def start(update: Update, context: CallbackContext) -> None:
     else:
         print(f"Invalid channel username: {selected_channel_username}")
 
-def login_telethon(phone_number, code):
-    # Use Telethon to perform user authentication
-    with telethon_client as client:
-        client.start()
-
 def main() -> None:
     # Start the Telegram bot
     updater = Updater(TELEGRAM_BOT_TOKEN)
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
-    
-    # Add a MessageHandler to handle /start command from users
-    dp.add_handler(MessageHandler(Filters.command & Filters.regex("^/start$"), start_telethon_handler))
+
+    # Start the Telethon worker thread
+    telethon_thread = threading.Thread(target=telethon_worker)
+    telethon_thread.start()
 
     # Start the webhook
     updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TELEGRAM_BOT_TOKEN, webhook_url=APP_URL + TELEGRAM_BOT_TOKEN)
     updater.idle()
+
+    # Wait for the Telethon thread to finish
+    telethon_thread.join()
 
 if __name__ == '__main__':
     main()
