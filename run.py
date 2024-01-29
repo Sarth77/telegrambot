@@ -1,7 +1,7 @@
 from telegram import ParseMode, Update
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater, ConversationHandler, CallbackContext
 from telethon import TelegramClient, events
-
+import os
 
 # Get environment variables or use default values
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
