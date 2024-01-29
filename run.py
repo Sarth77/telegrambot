@@ -11,24 +11,21 @@ PHONE_NUMBER = os.environ.get('PHONE_NUMBER')
 APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
 
-# Create a TelegramClient instance for Telethon
-telethon_client = TelegramClient('my_bot', API_ID, API_HASH)
 
 def start(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
 
 
     # Send authentication code
-    with telethon_client as client:
-        client.start()
+    client = TelegramClient('session', api_id, api_hash).start()
 
     # Use Telethon to perform advanced actions based on user_id
     update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
 
     # Get all the channels that the user can access
     channels = {d.entity.username: d.entity
-                for d in telethon_client.get_dialogs()
-                if d.is_channel}
+            for d in client.get_dialogs()
+            if d.is_channel}
 
     # Prompt the user to select a channel
     print("Available Channels:")
