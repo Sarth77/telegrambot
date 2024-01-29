@@ -1,7 +1,7 @@
 from telegram import ParseMode, Update
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater, ConversationHandler, CallbackContext
-from telethon.sync import TelegramClient
-import os
+from telethon import TelegramClient, events
+
 
 # Get environment variables or use default values
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
@@ -12,13 +12,9 @@ APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
 
 # Initialize Telethon client
-telethon_client = TelegramClient('session', API_ID, API_HASH)
+client = TelegramClient('session', API_ID, API_HASH).start(bot_token=TELEGRAM_BOT_TOKEN)
 
 def start(update: Update, context: CallbackContext) -> None:
-    user_id = update.message.from_user.id
-
-    # Send authentication code
-    client = telethon_client.start()
 
     # Use Telethon to perform advanced actions based on user_id
     update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
@@ -48,10 +44,6 @@ def start(update: Update, context: CallbackContext) -> None:
     else:
         print(f"Invalid channel username: {selected_channel_username}")
 
-def login_telethon(phone_number, code):
-    # Use Telethon to perform user authentication
-    with telethon_client as client:
-        client.start()
 
 def main() -> None:
     # Start the Telegram bot
