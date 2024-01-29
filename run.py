@@ -11,10 +11,9 @@ PHONE_NUMBER = os.environ.get('PHONE_NUMBER')
 APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
 
-# Initialize Telethon client
-client = TelegramClient('session', API_ID, API_HASH).start(bot_token=TELEGRAM_BOT_TOKEN)
-
 def start(update: Update, context: CallbackContext) -> None:
+
+    client = TelegramClient('session', API_ID, API_HASH).start(bot_token=TELEGRAM_BOT_TOKEN)
 
     # Use Telethon to perform advanced actions based on user_id
     update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
