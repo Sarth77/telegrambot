@@ -17,7 +17,7 @@ def start(update: Update, context: CallbackContext) -> None:
 
 
     # Send authentication code
-    client = TelegramClient('session', api_id, api_hash).start()
+    client = TelegramClient('session', API_ID, API_HASH).start()
 
     # Use Telethon to perform advanced actions based on user_id
     update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
