@@ -1,6 +1,5 @@
 from telegram import Update
 from telethon.sync import TelegramClient
-from telethon import functions, types
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 import threading
 import logging
@@ -14,9 +13,9 @@ PHONE, OTP, END = range(3)
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 API_ID = os.environ.get('API_ID')
 API_HASH = os.environ.get('API_HASH')
-PHONE_NUMBER = os.environ.get('PHONE_NUMBER')
 APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
+
 
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -24,8 +23,14 @@ logger = logging.getLogger(__name__)
 
 telethon_client = TelegramClient('session', API_ID, API_HASH)
 
-async def send_otp(phone_number):
-    await telethon_client.start(phone=phone_number)
+async def send_otp(phone_number, bot, chat_id):
+    await telethon_client.connect()
+    if not await telethon_client.is_user_authorized():
+        await telethon_client.send_code_request(phone_number)
+
+        bot.send_message(chat_id=chat_id, text="An OTP has been sent to your phone. Please enter the OTP.")
+    else:
+        bot.send_message(chat_id=chat_id, text="You are already logged in.")
 
 async def verify_otp(otp_code):
     try:
@@ -41,8 +46,9 @@ def start(update, context):
 
 def phone(update, context):
     phone_number = update.message.text
-    asyncio.run(send_otp(phone_number))
-    update.message.reply_text("An OTP has been sent to your phone. Please enter the OTP.")
+    chat_id = update.message.chat_id
+    bot = context.bot
+    asyncio.run(send_otp(phone_number, bot, chat_id))
     return OTP
 
 def otp(update, context):
@@ -59,7 +65,7 @@ def cancel(update, context):
     return ConversationHandler.END
 
 def main():
-    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)  # Replace with your bot token
+    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
 
     conv_handler = ConversationHandler(
