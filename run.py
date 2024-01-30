@@ -3,8 +3,12 @@ from telegram.ext import CommandHandler, Updater, CallbackContext, MessageHandle
 from telethon.sync import TelegramClient, events
 from telethon.tl.types import PeerUser, PeerChat, PeerChannel
 import threading
+import logging
 import asyncio
 import os
+
+# Define states for the conversation handler
+PHONE, OTP = range(2)
 
 # Get environment variables or use default values
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
@@ -14,76 +18,74 @@ PHONE_NUMBER = os.environ.get('PHONE_NUMBER')
 APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
 
-# Initialize Telethon client
-telethon_client = TelegramClient('session', API_ID, API_HASH)
+# Setup logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def start_telethon_handler(event):
-    sender = event.sender_id
-    chat_id = event.message.peer_id
-    if isinstance(chat_id, (PeerUser, PeerChat, PeerChannel)):
-        telethon_client.send_message(chat_id, 'Welcome to the bot! How can I assist you?')
+# Command handlers
+def start(update, context):
+    update.message.reply_text('Hi! Use /connect <phone_number> to connect your Telegram account.')
 
-def telethon_worker():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+def connect(update, context):
+    user = update.message.from_user
+    logger.info("User %s started the connection process.", user.first_name)
+    update.message.reply_text('Please send your phone number in international format (e.g., +1234567890)')
 
-    # Start the Telethon client in the thread
-    with telethon_client as client:
-        loop.run_until_complete(client.start())
-        client.add_event_handler(start_telethon_handler, events.NewMessage(pattern='/start'))
-        loop.run_until_complete(client.run_until_disconnected())
+    return PHONE
 
-def start(update: Update, context: CallbackContext) -> None:
-    user_id = update.message.from_user.id
+def phone(update, context):
+    phone_number = update.message.text
+    context.user_data['phone_number'] = phone_number
 
-    # Send authentication code
-    client = telethon_client.start()
+    # Here, use Telethon to send OTP to the provided phone number
+    # You would need to handle the Telethon client creation and sending OTP
 
-    # Use Telethon to perform advanced actions based on user_id
-    update.message.reply_text(f"Welcome! You are now logged in. Your channels: ...")
+    update.message.reply_text('An OTP has been sent to your phone. Please enter the OTP.')
+    
+    return OTP
 
-    # Get all the channels that the user can access
-    channels = {d.entity.username: d.entity
-                for d in client.get_dialogs()
-                if d.is_channel}
+def otp(update, context):
+    otp = update.message.text
+    phone_number = context.user_data['phone_number']
 
-    # Prompt the user to select a channel
-    print("Available Channels:")
-    for username, entity in channels.items():
-        print(f"{username} - {entity.title}")
+    # Here, use the received OTP to authenticate via Telethon
+    # After successful authentication, you can access user's Telegram data
 
-    selected_channel_username = input("Enter the username of the channel you want to view: ")
+    update.message.reply_text('You have been successfully connected!')
 
-    # Check if the selected channel username is valid
-    if selected_channel_username in channels:
-        selected_channel = channels[selected_channel_username]
+    return ConversationHandler.END
 
-        # Get the latest chat from the selected channel
-        latest_message = client.get_messages(selected_channel, limit=1)[0]
+def cancel(update, context):
+    user = update.message.from_user
+    logger.info("User %s canceled the connection process.", user.first_name)
+    update.message.reply_text('Connection process canceled.')
 
-        print(f"\nLatest Chat from {selected_channel_username} - {selected_channel.title}:")
-        print(f"{latest_message.sender_id}: {latest_message.text}")
+    return ConversationHandler.END
 
-    else:
-        print(f"Invalid channel username: {selected_channel_username}")
+def error(update, context):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
 
-def main() -> None:
-    # Start the Telegram bot
-    updater = Updater(TELEGRAM_BOT_TOKEN)
+def main():
+    updater = Updater(TELEGRAM_BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
 
-    dp.add_handler(CommandHandler("start", start))
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('connect', connect)],
+        states={
+            PHONE: [MessageHandler(Filters.text, phone)],
+            OTP: [MessageHandler(Filters.text, otp)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
 
-    # Start the Telethon worker thread
-    telethon_thread = threading.Thread(target=telethon_worker)
-    telethon_thread.start()
+    dp.add_handler(conv_handler)
+    dp.add_error_handler(error)
 
-    # Start the webhook
-    updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TELEGRAM_BOT_TOKEN, webhook_url=APP_URL + TELEGRAM_BOT_TOKEN)
+    # Start the Bot
+    updater.start_polling()
     updater.idle()
-
-    # Wait for the Telethon thread to finish
-    telethon_thread.join()
 
 if __name__ == '__main__':
     main()
+
