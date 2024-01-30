@@ -1,7 +1,7 @@
 from telegram import Update
-from telegram.ext import CommandHandler, Updater, CallbackContext, MessageHandler, Filters
-from telethon.sync import TelegramClient, events
-from telethon.tl.types import PeerUser, PeerChat, PeerChannel
+from telethon.sync import TelegramClient
+from telethon import functions, types
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 import threading
 import logging
 import asyncio
@@ -83,7 +83,7 @@ def main():
     dp.add_error_handler(error)
 
     # Start the Bot
-    updater.start_polling()
+    updater.start_webhook(listen="0.0.0.0", port=PORT, url_path=TELEGRAM_TOKEN, webhook_url=APP_URL + TELEGRAM_TOKEN)
     updater.idle()
 
 if __name__ == '__main__':
