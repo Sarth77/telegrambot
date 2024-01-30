@@ -1,7 +1,6 @@
 from telegram import Update
 from telethon.sync import TelegramClient
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
-import threading
 import logging
 import asyncio
 import os
@@ -15,7 +14,6 @@ API_ID = os.environ.get('API_ID')
 API_HASH = os.environ.get('API_HASH')
 APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
-
 
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -36,7 +34,7 @@ async def verify_otp(otp_code):
         await telethon_client.sign_in(code=otp_code)
         return True
     except Exception as e:
-        print(e)
+        logger.error(e)
         return False
 
 def start(update, context):
