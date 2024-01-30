@@ -23,14 +23,13 @@ logger = logging.getLogger(__name__)
 
 telethon_client = TelegramClient('session', API_ID, API_HASH)
 
-async def send_otp(phone_number, bot, chat_id):
+async def send_otp(phone_number):
     await telethon_client.connect()
     if not await telethon_client.is_user_authorized():
         await telethon_client.send_code_request(phone_number)
-
-        bot.send_message(chat_id=chat_id, text="An OTP has been sent to your phone. Please enter the OTP.")
+        return True  # Indicates that OTP was sent
     else:
-        bot.send_message(chat_id=chat_id, text="You are already logged in.")
+        return False  # User is already authorized
 
 async def verify_otp(otp_code):
     try:
@@ -46,9 +45,11 @@ def start(update, context):
 
 def phone(update, context):
     phone_number = update.message.text
-    chat_id = update.message.chat_id
-    bot = context.bot
-    asyncio.run(send_otp(phone_number, bot, chat_id))
+    is_otp_sent = asyncio.run(send_otp(phone_number))
+    if is_otp_sent:
+        update.message.reply_text("An OTP has been sent to your phone. Please enter the OTP.")
+    else:
+        update.message.reply_text("You are already logged in.")
     return OTP
 
 def otp(update, context):
@@ -58,7 +59,7 @@ def otp(update, context):
         return END
     else:
         update.message.reply_text("Invalid OTP. Please try again.")
-        return PHONE
+        return OTP
 
 def cancel(update, context):
     update.message.reply_text("Operation cancelled.")
