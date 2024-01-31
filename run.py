@@ -94,7 +94,7 @@ async def send_otp(update, context):
         await telethon_client.send_code_request(phone_number)
         update.effective_message.reply_text("An OTP has been sent to your phone. Please enter the OTP.")
         # The following line may not capture the OTP as intended
-        otp_code = await update.effective_message.text
+        otp_code = update.effective_message.text
         try:
             await telethon_client.sign_in(phone=phone_number, code=otp_code)
             update.effective_message.reply_text("You have been successfully connected!")
