@@ -86,41 +86,25 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
 
     return
 
-async def send_otp(phone_number):
+async def send_otp(update, context):
+    phone_number = update.effective_message.text
+    context.user_data['phone_number'] = phone_number
     await telethon_client.connect()
     if not await telethon_client.is_user_authorized():
         await telethon_client.send_code_request(phone_number)
-        return True  # Indicates that OTP was sent
-    else:
-        return False  # User is already authorized
-
-async def verify_otp(otp_code, phone_number):
-    try:
-        await telethon_client.sign_in(phone=phone_number, code=otp_code)
-        return True
-    except Exception as e:
-        print(e)
-        return False
-    
-def phone(update, context) -> int:
-    phone_number = update.effective_message.text
-    context.user_data['phone_number'] = phone_number
-    is_otp_sent = asyncio.run(send_otp(phone_number))
-    if is_otp_sent:
         update.effective_message.reply_text("An OTP has been sent to your phone. Please enter the OTP.")
-    else:
-        update.effective_message.reply_text("You are already logged in.")
-    return OTP
+        # The following line may not capture the OTP as intended
+        otp_code = await update.effective_message.text
+        try:
+            await telethon_client.sign_in(phone=phone_number, code=otp_code)
+            update.effective_message.reply_text("You have been successfully connected!")
+        except Exception as e:
+            print(e)
+            update.effective_message.reply_text("Invalid OTP. Please try again.")
 
-def otp(update, context):
-    otp_code = update.effective_message.text
-    phone_number = context.user_data.get('phone_number')
-    if asyncio.run(verify_otp(otp_code, phone_number)):
-        update.effective_message.reply_text("You have been successfully connected!")
-        return ConversationHandler.END
-    else:
-        update.effective_message.reply_text("Invalid OTP. Please try again.")
-        return OTP
+    
+def phone(update, context):
+    asyncio.run(send_otp(update, context))
 
 def welcome(update: Update, context: CallbackContext) -> str:
     """Sends welcome message to user.
