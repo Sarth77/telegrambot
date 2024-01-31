@@ -102,8 +102,8 @@ async def otp(update, context):
     otp_code = update.effective_message.text
     phone_number = context.user_data.get('phone_number')
     try:
-        await telethon_client.sign_in(phone=phone_number, code=otp_code)
-        update.effective_message.reply_text("You have been successfully connected!")
+        infomessage = await telethon_client.sign_in(phone=phone_number, code=otp_code)
+        update.effective_message.reply_text(infomessage)
     except Exception as e:
         print(e)
         update.effective_message.reply_text("Invalid OTP. Please try again.")
