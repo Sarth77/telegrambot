@@ -15,6 +15,13 @@ API_HASH = os.environ.get('API_HASH')
 APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
 
+session_file = 'session.session'
+if os.path.exists(session_file):
+    os.remove(session_file)
+    print("Session file deleted.")
+else:
+    print("Session file does not exist.")
+
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
