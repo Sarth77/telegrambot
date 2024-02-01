@@ -15,13 +15,6 @@ API_HASH = os.environ.get('API_HASH')
 APP_URL = os.environ.get("APP_URL")
 PORT = int(os.environ.get('PORT'))
 
-session_file = 'session.session'
-if os.path.exists(session_file):
-    os.remove(session_file)
-    print("Session file deleted.")
-else:
-    print("Session file does not exist.")
-
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -87,7 +80,7 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
     """
     if update.effective_message.chat.username not in authenticated_users:
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
-        return
+        return PHONE
 
     update.effective_message.reply_text("Unknown command. Use /trade to place a trade or /calculate to find information for a trade. You can also use the /help command to view instructions for this bot.")
 
