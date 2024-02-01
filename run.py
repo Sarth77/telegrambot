@@ -94,9 +94,10 @@ async def send_otp(update, context):
         update.effective_message.reply_text("You are already connected!")
         return ConversationHandler.END
     else:
-        await telethon_client.send_code_request(phone_number)
-        update.effective_message.reply_text("Please enter the OTP.")
-        await otp(update, context)  # Use 'await' here instead of asyncio.run()
+        sentCode = await telethon_client.send_code_request(phone=phone_number)
+        if sentCode:
+            update.effective_message.reply_text("Please enter the OTP.")
+            await otp(update, context)  # Use 'await' here instead of asyncio.run()
 
 async def otp(update, context):
     otp_code = update.effective_message.text
