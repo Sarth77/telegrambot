@@ -94,11 +94,11 @@ async def send_otp(update, context):
         return ConversationHandler.END
     else:
         await telethon_client.send_code_request(phone_number)
-        return OTP  # Indicates that OTP was sent
+        update.effective_message.reply_text("Please enter the OTP.")
+        asyncio.run(otp(update, context))  # Indicates that OTP was sent
 
 
 async def otp(update, context):
-    update.effective_message.reply_text("Please enter the OTP.")
     otp_code = update.effective_message.text
     phone_number = context.user_data.get('phone_number')
     try:
@@ -147,7 +147,7 @@ def main() -> None:
         entry_points=[CommandHandler('start', welcome)],
         states={
             PHONE: [MessageHandler(Filters.text & ~Filters.command, phone)],
-            OTP: [MessageHandler(Filters.text & ~Filters.command, otp)],
+            # OTP: [MessageHandler(Filters.text & ~Filters.command, otp)],
             # TRADE: [MessageHandler(Filters.text & ~Filters.command, PlaceTrade)],
             # CALCULATE: [MessageHandler(Filters.text & ~Filters.command, CalculateTrade)],
             # DECISION: [CommandHandler("yes", PlaceTrade), CommandHandler("no", cancel)]
