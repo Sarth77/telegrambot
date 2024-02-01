@@ -153,7 +153,7 @@ def main() -> None:
         entry_points=[CommandHandler('start', welcome)],
         states={
             PHONE: [MessageHandler(Filters.text & ~Filters.command, phone)],
-            # OTP: [MessageHandler(Filters.text & ~Filters.command, otp)],
+            OTP: [MessageHandler(Filters.text & ~Filters.command, otp)],
             # TRADE: [MessageHandler(Filters.text & ~Filters.command, PlaceTrade)],
             # CALCULATE: [MessageHandler(Filters.text & ~Filters.command, CalculateTrade)],
             # DECISION: [CommandHandler("yes", PlaceTrade), CommandHandler("no", cancel)]
