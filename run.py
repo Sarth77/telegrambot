@@ -95,10 +95,15 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
 
 async def send_otp(update, context):
     phone_number = context.user_data.get('phone_number')
-    await telethon_client.connect()
+    
+    # Connect the client if not already connected
+    if not telethon_client.is_connected():
+        await telethon_client.connect()
+        
+    # Check if the user is already authorized
     if await telethon_client.is_user_authorized():
-        update.effective_message.reply_text("You are already connected!")
-        return ConversationHandler.END
+        update.effective_message.reply_text("You are already logged in.")
+        return ConversationHandler.END      
     else:
         await telethon_client.send_code_request(phone_number)
         update.effective_message.reply_text("Please enter the OTP.")
