@@ -98,7 +98,7 @@ async def send_otp(update, context):
         update.effective_message.reply_text("You are already logged in.")
         return ConversationHandler.END      
     else:
-        login_token = await telethon_client.sign_in(phone_number)
+        await telethon_client.sign_in(phone = phone_number)
         context.user_data['login_token'] = login_token
         update.effective_message.reply_text("Please enter the OTP.")
         return OTP  # Indicates that OTP was sent
