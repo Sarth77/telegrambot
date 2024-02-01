@@ -105,17 +105,18 @@ async def send_otp(update, context):
         update.effective_message.reply_text("You are already logged in.")
         return ConversationHandler.END      
     else:
-        await telethon_client.send_code_request(phone_number)
+        login_token = await telethon_client.request_login_code(phone_number)
+        context.user_data['login_token'] = login_token
         update.effective_message.reply_text("Please enter the OTP.")
         return OTP  # Indicates that OTP was sent
-
-
+        
 async def otp(update, context):
     otp_code = update.effective_message.text
     phone_number = context.user_data.get('phone_number')
+    login_token = context.user_data.get('login_token')
     try:
-        await telethon_client.sign_in(phone=phone_number, code=otp_code)
-        update.effective_message.reply_text("You are successfully logged In.")
+        user_or_token = await telethon_client.sign_in(login_token, code=otp_code)
+        update.effective_message.reply_text("You have been successfully connected!",user_or_token)
         return ConversationHandler.END
     except Exception as e:
         print(e)
