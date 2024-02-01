@@ -89,18 +89,19 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
 async def send_otp(update, context):
     phone_number = context.user_data.get('phone_number')
     await telethon_client.connect()
+    
     if await telethon_client.is_user_authorized():
         update.effective_message.reply_text("You are already connected!")
         return ConversationHandler.END
     else:
         await telethon_client.send_code_request(phone_number)
         update.effective_message.reply_text("Please enter the OTP.")
-        asyncio.run(otp(update, context))  # Indicates that OTP was sent
-
+        await otp(update, context)  # Use 'await' here instead of asyncio.run()
 
 async def otp(update, context):
     otp_code = update.effective_message.text
     phone_number = context.user_data.get('phone_number')
+    
     try:
         await telethon_client.sign_in(phone=phone_number, code=otp_code)
         update.effective_message.reply_text("You are successfully logged In.")
@@ -109,11 +110,12 @@ async def otp(update, context):
         print(e)
         update.effective_message.reply_text("Invalid OTP. Please try again.")
         return OTP
-    
+
 def phone(update, context):
     phone_number = update.effective_message.text
     context.user_data['phone_number'] = phone_number
-    asyncio.run(send_otp(update, context))
+    asyncio.ensure_future(send_otp(update, context))  # Use 'asyncio.ensure_future()' instead of 'asyncio.run()'
+
 
 def welcome(update: Update, context: CallbackContext) -> str:
     """Sends welcome message to user.
