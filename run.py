@@ -115,7 +115,7 @@ async def otp(update, context):
 def phone(update, context):
     phone_number = update.effective_message.text
     context.user_data['phone_number'] = phone_number
-    asyncio.ensure_future(send_otp(update, context))  # Use 'asyncio.ensure_future()' instead of 'asyncio.run()'
+    asyncio.run(send_otp(update, context))  # Use 'asyncio.ensure_future()' instead of 'asyncio.run()'
 
 
 def welcome(update: Update, context: CallbackContext) -> str:
